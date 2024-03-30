@@ -47,7 +47,14 @@ public:
     explicit KDTreeFactoryThreadPool() :
         KDTreeFactoryThreadPool(std::thread::hardware_concurrency())
     {}
-    virtual ~KDTreeFactoryThreadPool() {}
+    //virtual ~KDTreeFactoryThreadPool() {}  // TODO Restore : If issue is not solved
+    virtual ~KDTreeFactoryThreadPool() { // TODO Remove : If issue is not solved
+        if (!finished) {
+            //threads_.join_all(); // TODO Rethink : Legacy alternative
+            threads_.interrupt_all(); // TODO Rethink : Alternative alternative
+            finished = false;
+        }
+    }
 
 protected:
     /**

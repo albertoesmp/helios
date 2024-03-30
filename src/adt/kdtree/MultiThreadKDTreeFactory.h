@@ -427,4 +427,10 @@ public:
      */
     virtual inline shared_ptr<SimpleKDTreeGeometricStrategy> getGS() const
     {return gs;}
+    // TODO Rethink : Comment if solves the issue, otherwise remove
+    virtual inline KDTreeFactoryThreadPool & getKDTreeFactoryThreadPool()
+    { return tpNode; }
+    // TODO Rethink : Comment if solves the issue, otherwise remove
+    virtual inline void setGS(shared_ptr<SimpleKDTreeGeometricStrategy> gs)
+    {this->gs = gs;}
 };

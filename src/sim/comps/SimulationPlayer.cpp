@@ -8,6 +8,10 @@ using helios::filems::FMSFacadeFactory;
 #include <scanner/Scanner.h>
 #include <platform/MovingPlatform.h>
 #include <platform/InterpolatedMovingPlatform.h>
+// TODO Rethink : Solves the Windows issue ? ---
+#include <adt/grove/KDGroveFactory.h>
+#include <adt/kdtree/MultiThreadKDTreeFactory.h>
+// --- TODO Rethink : Solves the Windows issue ?
 
 #include <memory>
 #include <chrono>
@@ -82,7 +86,7 @@ void SimulationPlayer::endPlay(){
 
 int SimulationPlayer::getNumTargetPlays(){
     // Get all the scene parts (objects) that will do a swap on repeat
-    std::vector<std::shared_ptr<ScenePart>> swapOnRepeatObjects =
+     std::vector<std::shared_ptr<ScenePart>> swapOnRepeatObjects =
         scene.getSwapOnRepeatObjects();
     // The number of target plays is one plus the maximum number of
     // target swaps among the many swap on repeat objects
@@ -199,6 +203,23 @@ void SimulationPlayer::restartScene(Scene &scene){
     }
     scene.parts = newParts;
     scene.primitives = newPrims;
+    // TODO Rethink : Solves the Windows issue ? ---
+    std::shared_ptr<KDTreeFactory> newKdtf(
+        scene.getKDGroveFactory()->getKdtf()->clone()
+    );
+    std:shared_ptr<MultiThreadKDTreeFactory> mtkdtf =
+        std::dynamic_pointer_cast<MultiThreadKDTreeFactory>(newKdtf);
+    if (mtkdtf != nullptr) {
+        //mtkdtf->getKDTreeFactoryThreadPool().interruptAll();
+        mtkdtf->setGS(std::make_shared<SimpleKDTreeGeometricStrategy>(
+            *mtkdtf->getKdtf()
+        ));
+    }
+    // TODO Rethink : Test non parallel KDTree factory ---
+    newKdtf = make_shared<SimpleKDTreeFactory>();
+    // --- TODO Rethink : Test non parallel KDTree factory
+    scene.setKDGroveFactory(std::make_shared<KDGroveFactory>(newKdtf));
+    // --- TODO Rethink : Solves the Windows issue ?
     // Reload scene
     scene.finalizeLoading(false);
 }

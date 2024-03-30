@@ -49,6 +49,9 @@ protected:
      * @brief Group of threads
      */
 	boost::thread_group threads_;
+    // TODO Rethink : New variables to solve the issue ---
+    bool finished;
+    // --- TODO Rethink : New variables to solve the issue
 
 public:
     // ***  CONSTRUCTION / DESTRUCTION  *** //
@@ -59,7 +62,8 @@ public:
      */
     explicit ThreadPool(std::size_t const _pool_size) :
         work_(boost::asio::make_work_guard(io_service_)),
-        pool_size(_pool_size)
+        pool_size(_pool_size),
+        finished(false)  // TODO Rethink : Does this solve the issue?
     {
         // Create threads
         for (std::size_t i = 0; i < pool_size; ++i){
@@ -76,11 +80,14 @@ public:
         io_service_.stop();
 
         // Suppress all exceptions.
-        try{
-            threads_.interrupt_all();  // Avoid hang-up after end of simulation
-            //threads_.join_all();  // Legacy mode
+        if (!finished) {
+            try {
+                // TODO Restore : Non-legacy mode
+                //threads_.interrupt_all();  // Avoid hang-up after end of simulation
+                threads_.join_all();  // Legacy mode
+            }
+            catch (const std::exception&) {}
         }
-        catch (const std::exception&) {}
     }
 
 public:
@@ -92,6 +99,10 @@ public:
      * @see ThreadPool::pool_size
      */
     virtual inline std::size_t getPoolSize() const {return pool_size;}
+    // TODO Rethink : Comment if solves the issue, otherwise remove
+    virtual inline void joinAll() { threads_.join_all(); }
+    // TODO Rethink : Comment if solves the issue, otherwise remove
+    virtual inline void interruptAll() { threads_.interrupt_all(); }
 
 
 };
